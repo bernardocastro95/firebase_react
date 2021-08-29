@@ -1,10 +1,31 @@
 import firebase from "./firebaseConnection";
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import './style.css'
 function App() {
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
   const [dados, setDados] = useState([])
+
+  useEffect(()=> {
+   async function loadPosts(){
+     await firebase.firestore().collection('posts')
+     .onSnapshot((doc)=>{
+       let posts = []
+
+       doc.forEach((item)=>{
+         posts.push({
+           id: item.id,
+           titulo: item.data().titulo,
+           autor: item.data().autor
+         })
+       })
+
+       setDados(posts)
+     })
+   }
+
+   loadPosts()
+  }, [])
 
   async function handleAdd(){
     await firebase.firestore().collection('posts')
