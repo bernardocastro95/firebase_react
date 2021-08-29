@@ -96,6 +96,17 @@ function App() {
       console.log('FALHA AO ATUALIZAR')
     })
   }
+  async function handleDelete(id){
+    await firebase.firestore().collection('posts')
+    .doc(id)
+    .delete()
+    .then(()=>{
+      alert('DELETADO COM SUCESSO')
+    })
+    .catch(()=>{
+      console.log('FALHA AO DELETAR')
+    })
+  }
   return (
     <div>
       <h1>React + Firebase</h1><br/>
@@ -120,7 +131,8 @@ function App() {
               <li key={post.id}>
                 <span>Id: {post.id}</span><br/>
                 <span>Titulo: {post.titulo}</span><br/>
-                <span>Autor: {post.autor}</span><br/><br/>
+                <span>Autor: {post.autor}</span><br/>
+                <button onClick={()=> handleDelete(post.id)}>Deletar</button><br/>
               </li>
             )
           })}
