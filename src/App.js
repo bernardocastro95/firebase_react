@@ -8,6 +8,8 @@ function App() {
   const [dados, setDados] = useState([])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [user, setUser] = useState(false)
+  const [userLogged, setUserLogged] = useState({})
 
   useEffect(()=> {
    async function loadPosts(){
@@ -28,6 +30,27 @@ function App() {
    }
 
    loadPosts()
+  }, [])
+
+  useEffect(()=> {
+    async function checkLogin(){
+      await firebase.auth().onAuthStateChanged((user)=> {
+        if(user){
+          setUser(true)
+          setUserLogged({
+            uid: user.uid,
+            email: user.email
+          })
+        }
+        else {
+          setUser(false)
+          setUserLogged({
+
+          })
+        }
+      })
+    }
+    checkLogin()
   }, [])
 
   async function handleAdd(){
@@ -124,16 +147,39 @@ function App() {
       console.log('Erro ' + error)
     })
   }
+  async function logout(){
+    await firebase.auth().signOut()
+  }
+  async function login(){
+    await firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(()=> {
+      console.log('VOCÊ LOGOU COM SUCESSO')
+    })
+    .catch((error)=> {
+      console.log('ERROR ' + error)
+    })
+  }
   return (
     <div>
       <h1>React + Firebase</h1><br/>
+
+
+      {user && (
+        <div>
+          <strong>Bem vindo(a). Você está logado(a)</strong><br/>
+          <span>{userLogged.uid} - {userLogged.email}</span>
+          <br/><br/>
+        </div>
+      )}
 
       <div className="container">
         <label>Email:</label>
         <input type="text" value={email} onChange={(e) => setEmail(e.target.value)}/>
         <label>Senha:</label>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+        <button onClick={login}>Login</button>
         <button onClick={newUser}>Cadastrar</button>
+        <button onClick={logout}>Sair</button>
       </div>
 
       <hr/>
