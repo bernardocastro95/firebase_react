@@ -7,6 +7,7 @@ function App() {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('')
   const [name, setName] = useState('')
+  const [user, setUser] = useState({})
 
   async function newUser(){
     await firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -40,6 +41,27 @@ function App() {
   }
   async function logout(){
     await firebase.auth().signOut()
+    setUser({})
+  }
+
+  async function login(){
+   await firebase.auth().signInWithEmailAndPassword(email, password)
+   .then( async (value) => {
+     await firebase.firestore().collection('users')
+     .doc(value.user.uid)
+     .get()
+     .then((snapshot)=>{
+       setUser({
+         name: snapshot.data().name,
+         role: snapshot.data().role,
+         status: snapshot.data().status,
+         email: value.user.email
+       })
+     })
+   })
+   .catch((error) => {
+     console.log('FALHA AO LOGAR ' + error) 
+   })
   }
 
   return (
@@ -59,10 +81,20 @@ function App() {
         <label>Senha:</label>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
 
+        <button onClick={login}>Login</button>
         <button onClick={newUser}>Cadastrar</button>
         <button onClick={logout}>Sair</button>
       </div>
 
+      <hr/><br/>
+      {Object.keys(user).length > 0 && (
+        <div>
+          <strong>Bem vindo(a)</strong> {user.name}<br/>
+          <strong>{user.role}</strong><br/>
+          <strong>{user.email}</strong><br/>
+          <strong>{user.status ? 'ACTIVE' : 'NOT ACTIVE'}</strong><br/>
+        </div>
+      )}
       
       
     </div>
